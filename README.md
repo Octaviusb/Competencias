@@ -1,4 +1,4 @@
-# 🇨🇴 Competency Manager - Sistema Colombiano de Gestión de Talento Humano
+Competency Manager - Sistema Colombiano de Gestión de Talento Humano
 
 **Software nacional colombiano** que revoluciona la gestión del talento humano con **cumplimiento total** de la normatividad laboral, contable y tributaria colombiana. La única solución integral que combina desarrollo profesional con **nómina electrónica DIAN** y cumplimiento fiscal automático.
 
