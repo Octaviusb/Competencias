@@ -1,0 +1,68 @@
+.dashboard {
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f8;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #2c3e50;
+}
+
+.dashboard-header p {
+  color: #7f8c8d;
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.card p {
+  margin: 0 0 1rem 0;
+  color: #555;
+}
+
+.card button {
+  padding: 0.5rem 1rem;
+  background: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.card button:hover {
+  background: #1a242f;
+}
+
+/* Colores específicos */
+.card.blue { border-left: 5px solid #3498db; }
+.card.pink { border-left: 5px solid #e91e63; }
+.card.cyan { border-left: 5px solid #00bcd4; }
+.card.orange { border-left: 5px solid #ff9800; }

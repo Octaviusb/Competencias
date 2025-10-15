@@ -1,0 +1,968 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  users        User[]
+  roles        Role[]
+  departments  Department[]
+  employees    Employee[]
+  categories   Category[]
+  competencies Competency[]
+  templates    EvaluationTemplate[]
+  evaluations  Evaluation[]
+  positions    Position[]
+  indicators   Indicator[]
+  positionProfiles PositionProfile[]
+  jobAnalyses  JobAnalysis[]
+  observations  Observation[]
+  interviews    Interview[]
+  developmentPlans DevelopmentPlan[]
+  disciplinaryActions DisciplinaryAction[]
+  auditLogs    AuditLog[]
+  interviewTemplates InterviewTemplate[]
+  documents    Document[]
+  leaveRequests LeaveRequest[]
+  leaveBalances LeaveBalance[]
+  attendanceRecords AttendanceRecord[]
+  payrollPeriods PayrollPeriod[]
+  payslips     Payslip[]
+  electronicPayrollDocuments ElectronicPayrollDocument[]
+  electronicPayrollTransmissions ElectronicPayrollTransmission[]
+  jobPostings  JobPosting[]
+  candidates   Candidate[]
+  applications Application[]
+  trainingCourses TrainingCourse[]
+  trainingEnrollments TrainingEnrollment[]
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String
+  passwordHash   String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  employee Employee?
+  roles    UserRole[]
+  auditLogs AuditLog[]
+
+  @@unique([organizationId, email])
+}
+
+model Role {
+  id             String    @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  users          UserRole[]
+
+  @@unique([name, organizationId], name: "name_organizationId")
+}
+
+model UserRole {
+  id       String @id @default(uuid())
+  userId   String
+  roleId   String
+  user     User   @relation(fields: [userId], references: [id])
+  role     Role   @relation(fields: [roleId], references: [id])
+}
+
+model Department {
+  id             String   @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  employees      Employee[]
+  positions      Position[]
+  jobAnalyses    JobAnalysis[]
+  jobPostings    JobPosting[]
+
+  @@unique([organizationId, name])
+}
+
+model Employee {
+  id             String   @id @default(uuid())
+  userId         String?  @unique
+  firstName      String
+  lastName       String
+  title          String?
+  departmentId   String?
+  managerId      String?
+  hireDate       DateTime?
+  status         String   @default("active")
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  manager      Employee?    @relation("Manager", fields: [managerId], references: [id])
+  reports      Employee[]   @relation("Manager")
+  evaluations  Evaluation[]
+  reviews      EvaluationAssignment[] @relation("ReviewerAssignments")
+  positions    EmployeePosition[]
+  jobAnalysisAsOccupant  JobAnalysis[] @relation("JobAnalysis_Occupant")
+  jobAnalysisAsSupervisor JobAnalysis[] @relation("JobAnalysis_Supervisor")
+  observationsAsEmployee Observation[] @relation("Observation_Employee")
+  observationsAsObserver Observation[] @relation("Observer")
+  interviewsAsEmployee Interview[] @relation("Interview_Employee")
+  interviewsAsInterviewer Interview[] @relation("Interviewer")
+  developmentPlans DevelopmentPlan[]
+  developmentReviewsAsReviewer DevelopmentReview[] @relation("DevelopmentReviewer")
+  managedPlans DevelopmentPlan[] @relation("PlanManager")
+  disciplinaryActionsAsEmployee DisciplinaryAction[] @relation("DisciplinaryEmployee")
+  disciplinaryActionsAsIssuer DisciplinaryAction[] @relation("DisciplinaryIssuer")
+  documents Document[]
+  leaveRequests LeaveRequest[]
+  leaveApprovalsGiven LeaveRequest[] @relation("LeaveApprover")
+  leaveBalances LeaveBalance[]
+  attendanceRecords AttendanceRecord[]
+  payslips     Payslip[]
+  trainingEnrollments TrainingEnrollment[]
+}
+
+model Category {
+  id             String   @id @default(uuid())
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  competencies   Competency[]
+
+  @@unique([organizationId, name])
+}
+
+model Competency {
+  id             String   @id @default(uuid())
+  name           String
+  description    String
+  categoryId     String
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  category     Category     @relation(fields: [categoryId], references: [id])
+  inTemplates  TemplateCompetency[]
+  results      EvaluationResult[]
+  inPositions  PositionCompetency[]
+  observationCompetencies ObservationCompetency[]
+  interviewEvaluations InterviewEvaluation[]
+  jobAnalysisCompetencies JobAnalysisCompetency[]
+  developmentGoals DevelopmentGoal[]
+
+  @@unique([organizationId, name])
+}
+
+model EvaluationTemplate {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  scaleMin       Int      @default(1)
+  scaleMax       Int      @default(5)
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  items        TemplateCompetency[]
+  evaluations  Evaluation[]
+  indicators   TemplateIndicator[]
+
+  @@unique([organizationId, name])
+}
+
+// Master list of indicators (optional per org), can be re-used across templates
+model Indicator {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  inTemplates   TemplateIndicator[]
+
+  @@unique([organizationId, name])
+}
+
+// Indicator attached to a template with an optional weight
+model TemplateIndicator {
+  id           String   @id @default(uuid())
+  templateId   String
+  indicatorId  String
+  weight       Float    @default(0)
+
+  template  EvaluationTemplate @relation(fields: [templateId], references: [id])
+  indicator Indicator          @relation(fields: [indicatorId], references: [id])
+
+  @@unique([templateId, indicatorId])
+}
+
+model TemplateCompetency {
+  id           String   @id @default(uuid())
+  templateId   String
+  competencyId String
+  weight       Float    @default(1)
+  expectedLvl  Int? 
+
+  template   EvaluationTemplate @relation(fields: [templateId], references: [id])
+  competency Competency         @relation(fields: [competencyId], references: [id])
+
+  @@unique([templateId, competencyId])
+}
+
+model Evaluation {
+  id             String   @id @default(uuid())
+  employeeId     String
+  templateId     String
+  period         String
+  status         String   @default("draft")
+  dueDate        DateTime?
+  organizationId String
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  employee     Employee            @relation(fields: [employeeId], references: [id])
+  template     EvaluationTemplate  @relation(fields: [templateId], references: [id])
+  assignments  EvaluationAssignment[]
+}
+
+model EvaluationAssignment {
+  id              String   @id @default(uuid())
+  evaluationId    String
+  reviewerEmpId   String
+  type            String // self | manager | peer
+  status          String @default("pending")
+
+  evaluation Evaluation @relation(fields: [evaluationId], references: [id])
+  reviewer   Employee   @relation("ReviewerAssignments", fields: [reviewerEmpId], references: [id])
+  results    EvaluationResult[]
+}
+
+model EvaluationResult {
+  id             String   @id @default(uuid())
+  assignmentId   String
+  competencyId   String
+  score          Int
+  comments       String?
+
+  assignment EvaluationAssignment @relation(fields: [assignmentId], references: [id])
+  competency Competency           @relation(fields: [competencyId], references: [id])
+
+  @@unique([assignmentId, competencyId])
+}
+
+model Position {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  level          String?
+  departmentId   String?
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  requirements PositionCompetency[]
+  holders      EmployeePosition[]
+  jobAnalysis  JobAnalysis?
+  profile      PositionProfile?
+  jobPostings  JobPosting[]
+
+  @@unique([organizationId, name])
+}
+
+// Position Profile (job profile meta)
+model PositionProfile {
+  id               String   @id @default(uuid())
+  positionId       String   @unique
+  organizationId   String
+  knowledge        String?
+  specificSkills   String?
+  experienceYears  Int?
+  educationLevel   String?
+  responsibilities String?
+  authorityLevel   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  position     Position     @relation(fields: [positionId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+/// Job Analysis per Position (MVP: Sections I and II)
+model JobAnalysis {
+  id                  String   @id @default(uuid())
+  positionId          String   @unique
+  organizationId      String
+  occupantEmployeeId  String?
+  supervisorEmployeeId String?
+  departmentId        String?
+  purpose             String?   // Section I – Propósito del Trabajo
+  primaryDutyIndex    Int?      // Selected primary function 1..6
+  observations        String?   // Optional notes
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  position     Position     @relation(fields: [positionId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  occupant     Employee?    @relation("JobAnalysis_Occupant", fields: [occupantEmployeeId], references: [id])
+  supervisor   Employee?    @relation("JobAnalysis_Supervisor", fields: [supervisorEmployeeId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  functions    EssentialFunction[]
+  context      JobAnalysisContext?
+  competencies JobAnalysisCompetency[]
+  expectations JobAnalysisExpectation[]
+}
+
+model EssentialFunction {
+  id            String  @id @default(uuid())
+  jobAnalysisId String
+  index         Int     // 1..6 position of function
+  title         String
+  description   String?
+  importance    Int     // 1..5 (Muy importante..Marginal)
+  timePercent   Int?    // 0..100
+
+  jobAnalysis JobAnalysis @relation(fields: [jobAnalysisId], references: [id])
+
+  @@unique([jobAnalysisId, index])
+}
+
+model PositionCompetency {
+  id           String   @id @default(uuid())
+  positionId   String
+  competencyId String
+  weight       Float    @default(1)
+  expectedLvl  Int
+
+  position   Position   @relation(fields: [positionId], references: [id])
+  competency Competency @relation(fields: [competencyId], references: [id])
+
+  @@unique([positionId, competencyId])
+}
+
+model EmployeePosition {
+  id         String   @id @default(uuid())
+  employeeId String
+  positionId String
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  position Position @relation(fields: [positionId], references: [id])
+}
+
+// Employee Observation System
+model Observation {
+  id             String   @id @default(uuid())
+  employeeId     String
+  observerId     String
+  type           String   // "formal" | "informal" | "360_feedback"
+  date           DateTime @default(now())
+  duration       Int?     // in minutes
+  context        String?  // Contexto de la observación
+  overallRating  Int?     // 1-5 scale
+  status         String   @default("draft") // draft | completed | archived
+  organizationId String
+
+  employee     Employee       @relation("Observation_Employee", fields: [employeeId], references: [id])
+  observer     Employee       @relation("Observer", fields: [observerId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  notes        ObservationNote[]
+  behaviors    ObservationBehavior[]
+  competencies ObservationCompetency[]
+
+  @@unique([organizationId, id])
+}
+
+model ObservationNote {
+  id           String @id @default(uuid())
+  observationId String
+  content      String
+  timestamp    DateTime @default(now())
+  category     String? // "positive" | "negative" | "neutral" | "suggestion"
+
+  observation Observation @relation(fields: [observationId], references: [id])
+}
+
+model ObservationBehavior {
+  id           String @id @default(uuid())
+  observationId String
+  description  String
+  category     String // "technical" | "soft_skill" | "leadership" | "communication" | "teamwork"
+  rating       Int?   // 1-5 scale
+  impact       String? // "low" | "medium" | "high"
+
+  observation Observation @relation(fields: [observationId], references: [id])
+}
+
+model ObservationCompetency {
+  id           String @id @default(uuid())
+  observationId String
+  competencyId String
+  rating       Int    // 1-5 scale
+  evidence     String?
+  suggestions  String?
+
+  observation Observation @relation(fields: [observationId], references: [id])
+  competency  Competency @relation(fields: [competencyId], references: [id])
+}
+
+// Interview System
+model Interview {
+  id             String   @id @default(uuid())
+  employeeId     String
+  interviewerId  String
+  type           String   // "performance" | "development" | "exit" | "promotion" | "onboarding"
+  templateId     String?  // Optional template used
+  purpose        String?
+  scheduledDate  DateTime
+  actualDate     DateTime?
+  duration       Int?     // in minutes
+  status         String   @default("scheduled") // scheduled | in_progress | completed | cancelled | postponed
+  location       String?
+  virtualLink    String?
+  acta           String?  // Acta de la entrevista - resumen formal de los hechos
+  organizationId String
+
+  employee     Employee       @relation("Interview_Employee", fields: [employeeId], references: [id])
+  interviewer  Employee       @relation("Interviewer", fields: [interviewerId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  template     InterviewTemplate? @relation(fields: [templateId], references: [id])
+  questions    InterviewQuestion[]
+  evaluations  InterviewEvaluation[]
+  notes        InterviewNote[]
+
+  @@unique([organizationId, id])
+}
+
+model InterviewQuestion {
+  id          String @id @default(uuid())
+  interviewId String
+  question    String
+  category    String // "technical" | "behavioral" | "situational" | "competency" | "experience"
+  order       Int
+  required    Boolean @default(false)
+
+  interview Interview @relation(fields: [interviewId], references: [id])
+  answers   InterviewAnswer[]
+}
+
+model InterviewAnswer {
+  id           String @id @default(uuid())
+  questionId   String
+  answer       String
+  rating       Int?   // 1-5 scale
+  followUp     String?
+
+  question InterviewQuestion @relation(fields: [questionId], references: [id])
+}
+
+model InterviewEvaluation {
+  id           String @id @default(uuid())
+  interviewId  String
+  competencyId String
+  rating       Int    // 1-5 scale
+  comments     String?
+  strengths    String?
+  improvements String?
+
+  interview  Interview  @relation(fields: [interviewId], references: [id])
+  competency Competency @relation(fields: [competencyId], references: [id])
+}
+
+model InterviewNote {
+  id          String @id @default(uuid())
+  interviewId String
+  content     String
+  timestamp   DateTime @default(now())
+  category    String? // "general" | "concern" | "strength" | "action_item"
+
+  interview Interview @relation(fields: [interviewId], references: [id])
+}
+
+// Extended Job Analysis
+model JobAnalysisContext {
+  id                  String   @id @default(uuid())
+  jobAnalysisId       String   @unique
+  workEnvironment     String?  // Entorno físico de trabajo
+  interpersonalRelationships String? // Relaciones interpersonales
+  toolsAndResources   String?  // Herramientas y recursos necesarios
+  trainingRequired    String?  // Capacitación específica requerida
+  physicalDemands     String?  // Demandas físicas del puesto
+  workingConditions   String?  // Condiciones de trabajo
+  travelRequirements  String?  // Requisitos de viaje
+  safetyConsiderations String? // Consideraciones de seguridad
+
+  jobAnalysis JobAnalysis @relation(fields: [jobAnalysisId], references: [id])
+}
+
+model JobAnalysisCompetency {
+  id                  String @id @default(uuid())
+  jobAnalysisId       String
+  competencyId        String
+  importance          Int    // 1-5 scale
+  requiredLevel       Int    // Nivel requerido 1-5
+  acquisitionMethod   String? // "experience" | "training" | "education" | "certification"
+  validationMethod    String? // Cómo se validará esta competencia
+
+  jobAnalysis JobAnalysis @relation(fields: [jobAnalysisId], references: [id])
+  competency  Competency  @relation(fields: [competencyId], references: [id])
+
+  @@unique([jobAnalysisId, competencyId])
+}
+
+model JobAnalysisExpectation {
+  id                  String @id @default(uuid())
+  jobAnalysisId       String
+  title               String
+  description         String
+  measurementCriteria String? // Criterios de medición
+  timeframe           String? // Plazo esperado
+  weight              Float?  // Ponderación en la evaluación general
+
+  jobAnalysis JobAnalysis @relation(fields: [jobAnalysisId], references: [id])
+}
+
+// Development Planning System
+model DevelopmentPlan {
+  id             String   @id @default(uuid())
+  employeeId     String
+  managerId      String?
+  title          String
+  description    String?
+  startDate      DateTime
+  targetDate     DateTime
+  status         String   @default("draft") // draft | active | completed | cancelled | on_hold
+  priority       String   @default("medium") // low | medium | high | critical
+  budget         Float?
+  organizationId String
+
+  employee     Employee       @relation(fields: [employeeId], references: [id])
+  manager      Employee?      @relation("PlanManager", fields: [managerId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  goals        DevelopmentGoal[]
+  reviews      DevelopmentReview[]
+  resources    DevelopmentResource[]
+
+  @@unique([organizationId, id])
+}
+
+model DevelopmentGoal {
+  id               String   @id @default(uuid())
+  planId           String
+  competencyId     String?
+  title            String
+  description      String
+  targetLevel      Int?     // Nivel objetivo 1-5
+  currentLevel     Int?     // Nivel actual 1-5
+  measurement      String?  // Cómo se medirá el progreso
+  weight           Float?   // Ponderación en el plan
+  status           String   @default("not_started") // not_started | in_progress | completed | delayed
+  dueDate          DateTime?
+
+  plan       DevelopmentPlan @relation(fields: [planId], references: [id])
+  competency Competency?     @relation(fields: [competencyId], references: [id])
+  activities DevelopmentActivity[]
+  reviews    DevelopmentReview[]
+}
+
+model DevelopmentActivity {
+  id          String   @id @default(uuid())
+  goalId      String
+  title       String
+  description String?
+  type        String   // "training" | "mentoring" | "project" | "course" | "certification" | "reading" | "practice"
+  status      String   @default("not_started") // not_started | in_progress | completed | cancelled
+  startDate   DateTime?
+  endDate     DateTime?
+  duration    Int?     // in hours or days
+  cost        Float?
+  provider    String?  // Proveedor del curso o entrenamiento
+  location    String?  // Lugar o plataforma
+  notes       String?
+
+  goal  DevelopmentGoal @relation(fields: [goalId], references: [id])
+}
+
+model DevelopmentReview {
+  id          String   @id @default(uuid())
+  planId      String
+  goalId      String?
+  reviewerId  String
+  reviewDate  DateTime @default(now())
+  overallProgress Int?  // 0-100 percentage
+  overallRating   Int?  // 1-5 scale
+  comments    String
+  status      String   @default("pending") // pending | completed
+  nextReview  DateTime?
+
+  plan     DevelopmentPlan @relation(fields: [planId], references: [id])
+  goal     DevelopmentGoal? @relation(fields: [goalId], references: [id])
+  reviewer Employee        @relation("DevelopmentReviewer", fields: [reviewerId], references: [id])
+}
+
+model DevelopmentResource {
+  id          String @id @default(uuid())
+  planId      String
+  name        String
+  type        String // "document" | "link" | "tool" | "contact" | "budget"
+  description String?
+  url         String?
+  cost        Float?
+  notes       String?
+
+  plan DevelopmentPlan @relation(fields: [planId], references: [id])
+}
+
+// Disciplinary Actions System (Actas de Descargos)
+model DisciplinaryAction {
+  id             String   @id @default(uuid())
+  employeeId     String
+  issuedById     String   // Manager or HR who issued the action
+  type           String   // "verbal_warning" | "written_warning" | "suspension" | "termination"
+  date           DateTime @default(now())
+  description    String   // Description of the incident
+  consequences   String?  // Consequences or actions taken
+  followUpDate   DateTime?
+  status         String   @default("active") // active | resolved | appealed
+  organizationId String
+
+  employee     Employee @relation("DisciplinaryEmployee", fields: [employeeId], references: [id])
+  issuedBy     Employee @relation("DisciplinaryIssuer", fields: [issuedById], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, id])
+}
+
+// Audit Log System
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String?
+  action         String   // "CREATE", "UPDATE", "DELETE", "LOGIN", etc.
+  entityType     String   // "Employee", "Observation", "Interview", etc.
+  entityId       String
+  details        String?  // JSON string with changes or additional info
+  timestamp      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?       @relation(fields: [userId], references: [id])
+
+  @@unique([organizationId, id])
+}
+
+// Interview Templates
+model InterviewTemplate {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  type           String   // "performance" | "development" | "exit" | "promotion" | "onboarding"
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  questions    InterviewQuestionTemplate[]
+  interviews   Interview[]
+
+  @@unique([organizationId, name])
+}
+
+model InterviewQuestionTemplate {
+  id          String @id @default(uuid())
+  templateId  String
+  question    String
+  category    String // "technical" | "behavioral" | "situational" | "competency" | "experience"
+  order       Int
+  required    Boolean @default(false)
+
+  template InterviewTemplate @relation(fields: [templateId], references: [id])
+}
+
+// Document Management System
+model Document {
+  id             String   @id @default(uuid())
+  title          String
+  type           String   // "procedure" | "warning" | "discharge" | "sanction" | "policy"
+  content        String   // Document content or file path
+  relatedEntityType String? // "Employee", "DisciplinaryAction", etc.
+  relatedEntityId   String?
+  organizationId String
+  createdById    String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    Employee    @relation(fields: [createdById], references: [id])
+
+  @@unique([organizationId, id])
+}
+
+// Vacation and Leave Management
+model LeaveRequest {
+  id             String   @id @default(uuid())
+  employeeId     String
+  type           String   // "vacation" | "sick" | "personal" | "maternity" | "paternity"
+  startDate      DateTime
+  endDate        DateTime
+  days           Int
+  reason         String?
+  status         String   @default("pending") // pending | approved | rejected | cancelled
+  approvedById   String?
+  approvedAt     DateTime?
+  rejectionReason String?
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  approvedBy   Employee?    @relation("LeaveApprover", fields: [approvedById], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model LeaveBalance {
+  id             String @id @default(uuid())
+  employeeId     String
+  year           Int
+  vacationDays   Int    @default(0)
+  sickDays       Int    @default(0)
+  personalDays   Int    @default(0)
+  usedVacation   Int    @default(0)
+  usedSick       Int    @default(0)
+  usedPersonal   Int    @default(0)
+  organizationId String
+
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([employeeId, year])
+}
+
+// Attendance Management
+model AttendanceRecord {
+  id             String    @id @default(uuid())
+  employeeId     String
+  date           DateTime
+  checkIn        DateTime?
+  checkOut       DateTime?
+  breakStart     DateTime?
+  breakEnd       DateTime?
+  hoursWorked    Float?    // calculated hours
+  overtimeHours  Float?    @default(0)
+  status         String    @default("present") // present | absent | late | half_day
+  notes          String?
+  organizationId String
+
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([employeeId, date])
+}
+
+// Payroll Management
+model PayrollPeriod {
+  id             String   @id @default(uuid())
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  payDate        DateTime
+  status         String   @default("draft") // draft | processing | completed | paid
+  organizationId String
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  payslips     Payslip[]
+
+  @@unique([organizationId, name])
+}
+
+model ElectronicPayrollDocument {
+  id             String   @id @default(uuid())
+  payslipId      String   @unique
+  cune           String   @unique // Código Único de Nómina Electrónica
+  documentType   String   // "nomina_electronica" | "ajuste_nomina"
+  periodType     String   // "mensual" | "quincenal" | etc.
+  paymentMethod  String   // Medio de pago
+  employerNit    String
+  employerName   String
+  employeeId     String   // ID del empleado beneficiario
+  employeeNit    String?  // NIT del empleado si aplica
+  employeeName   String
+  employeeLastName String
+  contractType   String   // Tipo de contrato
+  position       String
+  salary         Float
+  workedDays     Int
+  earnedIncome   Float
+  deductions     Float
+  netPayment     Float
+  paymentDate    DateTime
+  generationDate DateTime @default(now())
+  transmissionDate DateTime?
+  status         String   @default("generated") // generated | transmitted | accepted | rejected
+  rejectionReason String?
+  digitalSignature String? // Firma digital del documento
+  xmlContent     String   // Contenido XML del documento
+  organizationId String
+
+  payslip       Payslip     @relation(fields: [payslipId], references: [id])
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  transmissions ElectronicPayrollTransmission[]
+
+  @@unique([organizationId, cune])
+}
+
+model ElectronicPayrollTransmission {
+  id             String   @id @default(uuid())
+  documentId     String
+  transmissionDate DateTime @default(now())
+  status         String   // "sent" | "accepted" | "rejected"
+  responseCode   String?
+  responseMessage String?
+  retryCount     Int      @default(0)
+  nextRetryDate  DateTime?
+  organizationId String
+
+  document      ElectronicPayrollDocument @relation(fields: [documentId], references: [id])
+  organization  Organization              @relation(fields: [organizationId], references: [id])
+}
+
+model Payslip {
+  id             String  @id @default(uuid())
+  employeeId     String
+  periodId       String
+  baseSalary     Float
+  overtime       Float   @default(0)
+  bonuses        Float   @default(0)
+  deductions     Float   @default(0)
+  taxes          Float   @default(0)
+  netPay         Float
+  hoursWorked    Float   @default(0)
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  employee     Employee      @relation(fields: [employeeId], references: [id])
+  period       PayrollPeriod @relation(fields: [periodId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  items        PayslipItem[]
+  electronicDocument ElectronicPayrollDocument?
+
+  @@unique([employeeId, periodId])
+}
+
+model PayslipItem {
+  id          String @id @default(uuid())
+  payslipId   String
+  type        String // "earning" | "deduction" | "tax"
+  description String
+  amount      Float
+  taxable     Boolean @default(true)
+
+  payslip Payslip @relation(fields: [payslipId], references: [id])
+}
+
+// Recruitment Management
+model JobPosting {
+  id             String   @id @default(uuid())
+  title          String
+  description    String
+  requirements   String?
+  positionId     String?
+  departmentId   String?
+  salaryMin      Float?
+  salaryMax      Float?
+  location       String?
+  employmentType String   // "full_time" | "part_time" | "contract" | "internship"
+  status         String   @default("draft") // draft | active | paused | closed
+  postedDate     DateTime?
+  closingDate    DateTime?
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  position     Position?    @relation(fields: [positionId], references: [id])
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  applications Application[]
+}
+
+model Candidate {
+  id             String @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  resumeUrl      String?
+  linkedinUrl    String?
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  applications Application[]
+
+  @@unique([organizationId, email])
+}
+
+model Application {
+  id             String   @id @default(uuid())
+  candidateId    String
+  jobPostingId   String
+  status         String   @default("applied") // applied | screening | interview | offer | hired | rejected
+  appliedDate    DateTime @default(now())
+  notes          String?
+  organizationId String
+
+  candidate    Candidate   @relation(fields: [candidateId], references: [id])
+  jobPosting   JobPosting  @relation(fields: [jobPostingId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  stages       ApplicationStage[]
+}
+
+model ApplicationStage {
+  id            String   @id @default(uuid())
+  applicationId String
+  stage         String   // "application" | "phone_screen" | "technical" | "final" | "offer"
+  status        String   // "pending" | "passed" | "failed" | "scheduled"
+  scheduledDate DateTime?
+  completedDate DateTime?
+  feedback      String?
+  score         Int?
+
+  application Application @relation(fields: [applicationId], references: [id])
+}
+
+// Training Management
+model TrainingCourse {
+  id             String @id @default(uuid())
+  title          String
+  description    String?
+  provider       String?
+  duration       Int?   // in hours
+  cost           Float?
+  maxParticipants Int?
+  status         String @default("active") // active | inactive | archived
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  enrollments  TrainingEnrollment[]
+}
+
+model TrainingEnrollment {
+  id             String   @id @default(uuid())
+  employeeId     String
+  courseId       String
+  enrolledDate   DateTime @default(now())
+  startDate      DateTime?
+  completedDate  DateTime?
+  status         String   @default("enrolled") // enrolled | in_progress | completed | cancelled
+  score          Int?
+  feedback       String?
+  organizationId String
+
+  employee     Employee       @relation(fields: [employeeId], references: [id])
+  course       TrainingCourse @relation(fields: [courseId], references: [id])
+  organization Organization   @relation(fields: [organizationId], references: [id])
+
+  @@unique([employeeId, courseId])
+}
