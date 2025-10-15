@@ -1,4 +1,0 @@
-Usuario superadmin creado exitosamente:
-📧 Email: developer@competencias.com
-🔑 Password: SuperAdmin2024!
-🏢 Organización: Sistema Central (e855a7b2-f858-4587-8e7f-997eda8bee17)

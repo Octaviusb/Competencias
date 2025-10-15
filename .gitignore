@@ -22,3 +22,8 @@ backend/prisma/dev.db-journal
 # Misc
 .DS_Store
 Thumbs.db
+
+# Sensitive files
+credenciales.txt
+CREDENCIALES.md
+backend/.env.production
