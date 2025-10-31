@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Env files
+*.env
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite/Build
+frontend/dist/
+frontend/.vite/
+
+# Prisma
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# Misc
+.DS_Store
+Thumbs.db
+
+# Sensitive files
+credenciales.txt
+CREDENCIALES.md
+backend/.env.production
