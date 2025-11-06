@@ -41,3 +41,73 @@ Before we get started, keep in mind:
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
 [error] 
 [error] Error: Failed to get Firebase project tu-proyecto-firebase. Please make sure the project exists and your account has permission to access it.
+[debug] [2025-11-06T21:06:37.216Z] ----------------------------------------------------------------------
+[debug] [2025-11-06T21:06:37.223Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Octaviusb\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init functions --project backend-competencias-72423099
+[debug] [2025-11-06T21:06:37.224Z] CLI Version:   14.24.0
+[debug] [2025-11-06T21:06:37.224Z] Platform:      win32
+[debug] [2025-11-06T21:06:37.225Z] Node Version:  v22.20.0
+[debug] [2025-11-06T21:06:37.228Z] Time:          Thu Nov 06 2025 16:06:37 GMT-0500 (hora estándar de Colombia)
+[debug] [2025-11-06T21:06:37.228Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\Competencias\backend
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2025-11-06T21:06:43.797Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-06T21:06:43.798Z] > authorizing via signed-in user (ladriecol@gmail.com)
+[debug] [2025-11-06T21:06:43.807Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:43.809Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:43.813Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/backend-competencias-72423099 [none]
+[debug] [2025-11-06T21:06:44.271Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/backend-competencias-72423099 200
+[debug] [2025-11-06T21:06:44.271Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/backend-competencias-72423099 {"projectId":"backend-competencias-72423099","projectNumber":"331299305945","displayName":"Competencias Backend","name":"projects/backend-competencias-72423099","resources":{"hostingSite":"backend-competencias-72423099"},"state":"ACTIVE","etag":"1_fdd7d29e-d91b-4b15-98c0-88909beb2609"}
+[info] i  Using project backend-competencias-72423099 (Competencias Backend) . 
+[info] 
+=== Functions Setup
+[debug] [2025-11-06T21:06:44.319Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-06T21:06:44.319Z] > authorizing via signed-in user (ladriecol@gmail.com)
+[debug] [2025-11-06T21:06:44.320Z] [iam] checking project backend-competencias-72423099 for permissions ["firebase.projects.get"]
+[debug] [2025-11-06T21:06:44.320Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:44.321Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:44.321Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/backend-competencias-72423099:testIamPermissions [none]
+[debug] [2025-11-06T21:06:44.321Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/backend-competencias-72423099:testIamPermissions x-goog-quota-user=projects/backend-competencias-72423099
+[debug] [2025-11-06T21:06:44.321Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/backend-competencias-72423099:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-11-06T21:06:44.781Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/backend-competencias-72423099:testIamPermissions 200
+[debug] [2025-11-06T21:06:44.782Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/backend-competencias-72423099:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-11-06T21:06:44.784Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:44.784Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:44.786Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:44.786Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:44.786Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-06T21:06:44.787Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/backend-competencias-72423099
+[debug] [2025-11-06T21:06:44.789Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/runtimeconfig.googleapis.com [none]
+[debug] [2025-11-06T21:06:44.790Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/backend-competencias-72423099
+[debug] [2025-11-06T21:06:45.443Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/runtimeconfig.googleapis.com 200
+[debug] [2025-11-06T21:06:45.444Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2025-11-06T21:06:45.499Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com 200
+[debug] [2025-11-06T21:06:45.500Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2025-11-06T21:06:45.500Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:45.500Z] Checked if tokens are valid: true, expires at: 1762466650693
+[debug] [2025-11-06T21:06:45.501Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com:enable [none]
+[debug] [2025-11-06T21:06:45.501Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com:enable x-goog-quota-user=projects/backend-competencias-72423099
+[debug] [2025-11-06T21:06:46.448Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com:enable 200
+[debug] [2025-11-06T21:06:46.448Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/backend-competencias-72423099/services/cloudfunctions.googleapis.com:enable [omitted]
+[info] 
+Detected existing codebase(s): default
+
