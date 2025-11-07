@@ -14,6 +14,9 @@ COPY backend/ ./
 # Create database directory and set permissions
 RUN mkdir -p prisma && chmod 755 prisma
 
+# Set DATABASE_URL for build
+ENV DATABASE_URL="file:./prisma/dev.db"
+
 # Generate Prisma client
 RUN npx prisma generate
 
