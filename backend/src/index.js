@@ -119,16 +119,25 @@ app.post('/api/init-demo', async (req, res) => {
   try {
     // Create demo organization if not exists
     let org = await prisma.organization.findUnique({
-      where: { name: 'Demo Organization' }
+      where: { name: 'Empresa Demo' }
     });
     
     if (!org) {
       org = await prisma.organization.create({
-        data: { name: 'Demo Organization' }
+        data: { name: 'Empresa Demo' }
+      });
+      
+      // Create default roles
+      await prisma.role.createMany({ 
+        data: [
+          { name: 'admin', organizationId: org.id },
+          { name: 'manager', organizationId: org.id },
+          { name: 'employee', organizationId: org.id },
+        ]
       });
     }
     
-    res.json({ success: true, organizationId: org.id });
+    res.json({ success: true, organizationId: org.id, name: org.name });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
