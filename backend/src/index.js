@@ -114,6 +114,28 @@ app.get('/', (req, res) => {
   res.json({ message: 'Competency Manager API', status: 'running' });
 });
 
+// Admin endpoint to manage organizations
+app.get('/api/admin/organizations', async (req, res) => {
+  try {
+    const orgs = await prisma.organization.findMany({
+      include: { _count: { select: { users: true } } }
+    });
+    res.json(orgs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete specific organization
+app.delete('/api/admin/organizations/:id', async (req, res) => {
+  try {
+    await prisma.organization.delete({ where: { id: req.params.id } });
+    res.json({ success: true, message: 'Organization deleted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Clean database and create only demo company
 app.post('/api/reset-demo', async (req, res) => {
   try {
