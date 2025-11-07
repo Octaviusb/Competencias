@@ -237,15 +237,46 @@ app.post('/api/reset-demo', async (req, res) => {
     });
     
     // Create default roles
+    const adminRole = await prisma.role.create({ 
+      data: { name: 'admin', organizationId: org.id }
+    });
     await prisma.role.createMany({ 
       data: [
-        { name: 'admin', organizationId: org.id },
         { name: 'manager', organizationId: org.id },
         { name: 'employee', organizationId: org.id },
       ]
     });
     
-    res.json({ success: true, organizationId: org.id, name: org.name, message: 'Database reset with demo company only' });
+    // Create demo user
+    const bcrypt = require('bcrypt');
+    const hashedPassword = await bcrypt.hash('demo123', 10);
+    
+    const user = await prisma.user.create({
+      data: {
+        email: 'admin@demo.com',
+        passwordHash: hashedPassword,
+        organizationId: org.id
+      }
+    });
+    
+    // Assign admin role to user
+    await prisma.userRole.create({
+      data: {
+        userId: user.id,
+        roleId: adminRole.id
+      }
+    });
+    
+    res.json({ 
+      success: true, 
+      organizationId: org.id, 
+      name: org.name, 
+      message: 'Database reset with demo company only',
+      credentials: {
+        email: 'admin@demo.com',
+        password: 'demo123'
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
