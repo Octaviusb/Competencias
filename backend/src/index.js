@@ -114,6 +114,15 @@ app.get('/', (req, res) => {
   res.json({ message: 'Competency Manager API', status: 'running' });
 });
 
+// Debug endpoint
+app.get('/api/debug', (req, res) => {
+  res.json({ 
+    message: 'This is Fly.io backend', 
+    timestamp: new Date().toISOString(),
+    headers: req.headers
+  });
+});
+
 // Admin endpoint to manage organizations
 app.get('/api/admin/organizations', async (req, res) => {
   try {
