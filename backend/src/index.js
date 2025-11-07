@@ -157,13 +157,21 @@ app.post('/api/query', async (req, res) => {
 
 // Download database file
 app.get('/api/download-db', (req, res) => {
-  const fs = require('fs');
-  const path = './prisma/dev.db';
-  
-  if (fs.existsSync(path)) {
-    res.download(path, 'competency-manager.db');
-  } else {
-    res.status(404).json({ error: 'Database file not found' });
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const dbPath = path.join(__dirname, '../prisma/dev.db');
+    
+    if (fs.existsSync(dbPath)) {
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', 'attachment; filename="competency-manager.db"');
+      const fileStream = fs.createReadStream(dbPath);
+      fileStream.pipe(res);
+    } else {
+      res.status(404).json({ error: 'Database file not found at: ' + dbPath });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
