@@ -27,3 +27,5 @@ Thumbs.db
 credenciales.txt
 CREDENCIALES.md
 backend/.env.production
+
+.vercel

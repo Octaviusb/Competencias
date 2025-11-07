@@ -123,6 +123,38 @@ app.get('/api/debug', (req, res) => {
   });
 });
 
+// SQL Console endpoint
+app.post('/api/sql', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: 'Query required' });
+    }
+    
+    // Execute raw SQL
+    const result = await prisma.$executeRawUnsafe(query);
+    res.json({ success: true, result, query });
+  } catch (error) {
+    res.status(500).json({ error: error.message, query: req.body.query });
+  }
+});
+
+// SQL Query endpoint (for SELECT)
+app.post('/api/query', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: 'Query required' });
+    }
+    
+    // Execute raw SQL query
+    const result = await prisma.$queryRawUnsafe(query);
+    res.json({ success: true, result, query });
+  } catch (error) {
+    res.status(500).json({ error: error.message, query: req.body.query });
+  }
+});
+
 // Admin endpoint to manage organizations
 app.get('/api/admin/organizations', async (req, res) => {
   try {
