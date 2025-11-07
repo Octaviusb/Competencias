@@ -248,8 +248,8 @@ app.post('/api/reset-demo', async (req, res) => {
     });
     
     // Create demo user
-    const bcrypt = require('bcrypt');
-    const hashedPassword = await bcrypt.hash('demo123', 10);
+    const bcrypt = await import('bcrypt');
+    const hashedPassword = await bcrypt.default.hash('demo123', 10);
     
     const user = await prisma.user.create({
       data: {
