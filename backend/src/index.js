@@ -155,12 +155,40 @@ app.post('/api/query', async (req, res) => {
   }
 });
 
+// Check database file location
+app.get('/api/db-info', (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    
+    const possiblePaths = [
+      './prisma/dev.db',
+      '/app/prisma/dev.db',
+      path.join(__dirname, '../prisma/dev.db'),
+      path.join(process.cwd(), 'prisma/dev.db')
+    ];
+    
+    const info = possiblePaths.map(p => ({
+      path: p,
+      exists: fs.existsSync(p),
+      size: fs.existsSync(p) ? fs.statSync(p).size : 0
+    }));
+    
+    res.json({ 
+      cwd: process.cwd(),
+      __dirname,
+      paths: info
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Download database file
 app.get('/api/download-db', (req, res) => {
   try {
     const fs = require('fs');
-    const path = require('path');
-    const dbPath = path.join(__dirname, '../prisma/dev.db');
+    const dbPath = './prisma/dev.db';
     
     if (fs.existsSync(dbPath)) {
       res.setHeader('Content-Type', 'application/octet-stream');
