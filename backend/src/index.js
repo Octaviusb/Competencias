@@ -155,6 +155,18 @@ app.post('/api/query', async (req, res) => {
   }
 });
 
+// Download database file
+app.get('/api/download-db', (req, res) => {
+  const fs = require('fs');
+  const path = './prisma/dev.db';
+  
+  if (fs.existsSync(path)) {
+    res.download(path, 'competency-manager.db');
+  } else {
+    res.status(404).json({ error: 'Database file not found' });
+  }
+});
+
 // Admin endpoint to manage organizations
 app.get('/api/admin/organizations', async (req, res) => {
   try {
