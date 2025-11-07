@@ -24,6 +24,7 @@ import Attendance from './pages/Attendance'
 import Payroll from './pages/Payroll'
 import Recruitment from './pages/Recruitment'
 import Training from './pages/Training'
+import Psychometric from './pages/Psychometric'
 
 export default function Router() {
   return (
@@ -238,6 +239,16 @@ export default function Router() {
           <RequireOrganization>
             <RequireAuth>
               <Training />
+            </RequireAuth>
+          </RequireOrganization>
+        }
+      />
+      <Route
+        path="/psychometric"
+        element={
+          <RequireOrganization>
+            <RequireAuth>
+              <Psychometric />
             </RequireAuth>
           </RequireOrganization>
         }

@@ -11,10 +11,25 @@ export default function psychometricRouter(prisma) {
     try {
       const { jobAnalysisId, opennessWeight, conscientiousnessWeight, extraversionWeight, agreeablenessWeight, neuroticismWeight } = req.body;
       
+      // Validar que todos los pesos sean números válidos
+      const weights = [opennessWeight, conscientiousnessWeight, extraversionWeight, agreeablenessWeight, neuroticismWeight];
+      if (weights.some(w => typeof w !== 'number' || w < 0 || w > 100)) {
+        return res.status(400).json({ error: 'Todos los pesos deben ser números entre 0 y 100' });
+      }
+      
       // Validar que los pesos sumen 100%
       const totalWeight = opennessWeight + conscientiousnessWeight + extraversionWeight + agreeablenessWeight + neuroticismWeight;
       if (Math.abs(totalWeight - 100) > 0.01) {
         return res.status(400).json({ error: 'Los pesos deben sumar 100%' });
+      }
+      
+      // Verificar que el análisis de puesto existe y pertenece a la organización
+      const jobAnalysis = await prisma.jobAnalysis.findUnique({
+        where: { id: jobAnalysisId, organizationId: req.organizationId }
+      });
+      
+      if (!jobAnalysis) {
+        return res.status(404).json({ error: 'Análisis de puesto no encontrado' });
       }
 
       const profile = await prisma.psychometricProfile.upsert({
@@ -43,7 +58,29 @@ export default function psychometricRouter(prisma) {
     }
   });
 
-  // 2. Obtener perfil psicométrico
+  // 2. Obtener todos los perfiles psicométricos
+  router.get('/profiles', async (req, res, next) => {
+    try {
+      const profiles = await prisma.psychometricProfile.findMany({
+        where: { organizationId: req.organizationId },
+        include: {
+          jobAnalysis: {
+            include: { 
+              position: true,
+              department: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      res.json(profiles);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // 3. Obtener perfil psicométrico por ID de análisis de puesto
   router.get('/profiles/:jobAnalysisId', async (req, res, next) => {
     try {
       const profile = await prisma.psychometricProfile.findUnique({
@@ -68,7 +105,7 @@ export default function psychometricRouter(prisma) {
     }
   });
 
-  // 3. Importar resultados de prueba (CSV o JSON)
+  // 4. Importar resultados de prueba (CSV o JSON)
   router.post('/results/import', async (req, res, next) => {
     try {
       const { profileId, candidateId, employeeId, openness, conscientiousness, extraversion, agreeableness, neuroticism, notes } = req.body;
@@ -128,7 +165,7 @@ export default function psychometricRouter(prisma) {
     }
   });
 
-  // 4. Obtener resultados por perfil
+  // 5. Obtener resultados por perfil
   router.get('/results/profile/:profileId', async (req, res, next) => {
     try {
       const results = await prisma.psychometricResult.findMany({
@@ -149,7 +186,7 @@ export default function psychometricRouter(prisma) {
     }
   });
 
-  // 5. Obtener ranking de candidatos por fit score
+  // 6. Obtener ranking de candidatos por fit score
   router.get('/ranking/:profileId', async (req, res, next) => {
     try {
       const results = await prisma.psychometricResult.findMany({

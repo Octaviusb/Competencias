@@ -29,7 +29,12 @@ const Dashboard = () => {
           <h3>Planes de desarrollo</h3>
           <p>0 activos</p>
           <button>Ver planes</button>
-          </div>
+        </div>
+        <div className="card green">
+          <h3>Pruebas Psicométricas</h3>
+          <p>Big Five</p>
+          <button onClick={() => window.location.href = '/psychometric'}>Ver pruebas</button>
+        </div>
       </section>
     </div>
   );
