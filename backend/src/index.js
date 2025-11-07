@@ -309,6 +309,7 @@ import recruitmentRouter from './routes/recruitment.js';
 import trainingRouter from './routes/training.js';
 import searchRouter from './routes/search.js';
 import publicRouter from './routes/public.js';
+import psychometricRouter from './routes/psychometric.js';
 import { auditMiddleware } from './services/audit.js';
 // import cache from './services/cache.js'; // Optional - requires Redis
 
@@ -343,6 +344,7 @@ app.use('/api/payroll', payrollRouter(prisma));
 app.use('/api/recruitment', recruitmentRouter(prisma));
 app.use('/api/training', trainingRouter(prisma));
 app.use('/api/search', searchRouter(prisma));
+app.use('/api/psychometric', psychometricRouter(prisma));
 
 // 404
 app.use((req, res) => {

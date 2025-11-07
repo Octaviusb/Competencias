@@ -43,6 +43,8 @@ model Organization {
   applications Application[]
   trainingCourses TrainingCourse[]
   trainingEnrollments TrainingEnrollment[]
+  psychometricProfiles PsychometricProfile[]
+  psychometricResults PsychometricResult[]
 }
 
 model User {
@@ -130,6 +132,7 @@ model Employee {
   attendanceRecords AttendanceRecord[]
   payslips     Payslip[]
   trainingEnrollments TrainingEnrollment[]
+  psychometricResults PsychometricResult[]
 }
 
 model Category {
@@ -317,6 +320,7 @@ model JobAnalysis {
   context      JobAnalysisContext?
   competencies JobAnalysisCompetency[]
   expectations JobAnalysisExpectation[]
+  psychometricProfile PsychometricProfile?
 }
 
 model EssentialFunction {
@@ -899,6 +903,7 @@ model Candidate {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   applications Application[]
+  psychometricResults PsychometricResult[]
 
   @@unique([organizationId, email])
 }
@@ -965,4 +970,53 @@ model TrainingEnrollment {
   organization Organization   @relation(fields: [organizationId], references: [id])
 
   @@unique([employeeId, courseId])
+}
+
+// Big Five Psychometric Tests Module
+model PsychometricProfile {
+  id                String   @id @default(uuid())
+  jobAnalysisId     String   @unique
+  organizationId    String
+  
+  // Big Five weights (0-100%)
+  opennessWeight    Float    @default(20)    // Openness to Experience
+  conscientiousnessWeight Float @default(20) // Conscientiousness  
+  extraversionWeight Float   @default(20)    // Extraversion
+  agreeablenessWeight Float  @default(20)    // Agreeableness
+  neuroticismWeight Float    @default(20)    // Neuroticism (inverted)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  jobAnalysis      JobAnalysis  @relation(fields: [jobAnalysisId], references: [id])
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  testResults      PsychometricResult[]
+}
+
+model PsychometricResult {
+  id                String   @id @default(uuid())
+  candidateId       String?
+  employeeId        String?
+  profileId         String
+  organizationId    String
+  
+  // Big Five raw scores (0-100)
+  openness          Float
+  conscientiousness Float
+  extraversion      Float
+  agreeableness     Float
+  neuroticism       Float
+  
+  // Calculated fit score (0-100%)
+  fitScore          Float?
+  
+  // Metadata
+  testDate          DateTime @default(now())
+  importedBy        String?
+  notes             String?
+  
+  candidate        Candidate?         @relation(fields: [candidateId], references: [id])
+  employee         Employee?          @relation(fields: [employeeId], references: [id])
+  profile          PsychometricProfile @relation(fields: [profileId], references: [id])
+  organization     Organization       @relation(fields: [organizationId], references: [id])
 }
