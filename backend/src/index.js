@@ -114,30 +114,27 @@ app.get('/', (req, res) => {
   res.json({ message: 'Competency Manager API', status: 'running' });
 });
 
-// Initialize demo data
-app.post('/api/init-demo', async (req, res) => {
+// Clean database and create only demo company
+app.post('/api/reset-demo', async (req, res) => {
   try {
-    // Create demo organization if not exists
-    let org = await prisma.organization.findUnique({
-      where: { name: 'Empresa Demo' }
+    // Delete all organizations
+    await prisma.organization.deleteMany({});
+    
+    // Create only demo organization
+    const org = await prisma.organization.create({
+      data: { name: 'Empresa Demo' }
     });
     
-    if (!org) {
-      org = await prisma.organization.create({
-        data: { name: 'Empresa Demo' }
-      });
-      
-      // Create default roles
-      await prisma.role.createMany({ 
-        data: [
-          { name: 'admin', organizationId: org.id },
-          { name: 'manager', organizationId: org.id },
-          { name: 'employee', organizationId: org.id },
-        ]
-      });
-    }
+    // Create default roles
+    await prisma.role.createMany({ 
+      data: [
+        { name: 'admin', organizationId: org.id },
+        { name: 'manager', organizationId: org.id },
+        { name: 'employee', organizationId: org.id },
+      ]
+    });
     
-    res.json({ success: true, organizationId: org.id, name: org.name });
+    res.json({ success: true, organizationId: org.id, name: org.name, message: 'Database reset with demo company only' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
