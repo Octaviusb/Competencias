@@ -198,21 +198,21 @@ export default function SelectOrganization() {
                           fontSize: '20px',
                           fontWeight: 'bold'
                         }}>
-                          {org.name.charAt(0).toUpperCase()}
+                          {org?.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                       }
                       title={
                         <div style={{ fontSize: '16px', fontWeight: 600, color: '#2c3e50' }}>
-                          {org.name}
+                          {org?.name || 'Sin nombre'}
                         </div>
                       }
                       description={
                         <div>
                           <div style={{ fontSize: '12px', color: '#666', marginBottom: 4 }}>
-                            ID: {org.id}
+                            ID: {org?.id || 'N/A'}
                           </div>
                           <div style={{ fontSize: '12px', color: '#999' }}>
-                            Creada: {new Date(org.createdAt).toLocaleDateString('es-ES')}
+                            Creada: {org?.createdAt ? new Date(org.createdAt).toLocaleDateString('es-ES') : 'N/A'}
                           </div>
                         </div>
                       }
