@@ -100,6 +100,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Favicon
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ message: 'Competency Manager API', status: 'running' });
+});
+
 // Routes
 import authRouter from './routes/auth.js';
 import orgRouter from './routes/organizations.js';
