@@ -57,7 +57,11 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://competencias-hk6sne7ts-octaviusbs-projects.vercel.app',
+    /\.vercel\.app$/
+  ],
   credentials: true
 }));
 app.use(express.json({ limit: '1mb' }));
@@ -108,6 +112,26 @@ app.get('/favicon.ico', (req, res) => {
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ message: 'Competency Manager API', status: 'running' });
+});
+
+// Initialize demo data
+app.post('/api/init-demo', async (req, res) => {
+  try {
+    // Create demo organization if not exists
+    let org = await prisma.organization.findUnique({
+      where: { name: 'Demo Organization' }
+    });
+    
+    if (!org) {
+      org = await prisma.organization.create({
+        data: { name: 'Demo Organization' }
+      });
+    }
+    
+    res.json({ success: true, organizationId: org.id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Routes
