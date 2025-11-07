@@ -175,7 +175,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   const sanitizedPort = String(PORT).replace(/[\r\n]/g, '');
   logger.info(`Backend running on http://localhost:${sanitizedPort}`);
