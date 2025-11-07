@@ -11,11 +11,14 @@ RUN npm ci --only=production
 
 COPY backend/ ./
 
+# Create database directory and set permissions
+RUN mkdir -p prisma && chmod 755 prisma
+
 # Generate Prisma client
 RUN npx prisma generate
 
-# Create database directory
-RUN mkdir -p prisma
+# Initialize database
+RUN npx prisma db push
 
 EXPOSE 8080
 
