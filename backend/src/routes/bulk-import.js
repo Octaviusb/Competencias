@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import ExcelJS from 'exceljs';
 import { requireAuth } from '../middleware/auth.js';
-import { auditLogger } from '../services/audit.js';
+import { auditLog } from '../services/audit.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -189,18 +189,22 @@ export default function bulkImportRouter(prisma) {
       }
 
       // Registrar auditoría
-      await auditLogger.log({
-        organizationId: req.organizationId,
-        userId: req.userId,
-        action: 'BULK_IMPORT_EMPLOYEES',
-        entityType: 'Employee',
-        entityId: 'bulk',
-        details: JSON.stringify({
-          totalProcessed: worksheet.rowCount - 1,
-          successful: results.success,
-          errors: results.errors.length
-        })
-      });
+      auditLog(
+        'BULK_IMPORT_EMPLOYEES',
+        req.userId,
+        req.organizationId,
+        {
+          resource: req.originalUrl,
+          resourceId: 'bulk',
+          userAgent: req.get('User-Agent'),
+          ip: req.ip,
+          changes: {
+            totalProcessed: worksheet.rowCount - 1,
+            successful: results.success,
+            errors: results.errors.length
+          }
+        }
+      );
 
       res.json(results);
 
