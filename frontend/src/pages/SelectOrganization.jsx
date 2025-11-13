@@ -39,25 +39,23 @@ export default function SelectOrganization() {
   const load = async () => {
     setLoading(true)
     try {
-      // Use admin organizations endpoint
-      const response = await api.get('/admin/organizations')
-      const orgs = Array.isArray(response.data) ? response.data : []
-      
-      // Filter organizations that have users or are demo, or show first 3 if none match
-      let validOrgs = orgs.filter(org => 
-        org._count?.users > 0 || 
-        org.name?.toLowerCase().includes('demo') ||
-        org.name?.toLowerCase().includes('empresa')
-      )
-      
-      // If no valid orgs found, show first 3 to avoid empty list
-      if (validOrgs.length === 0) {
-        validOrgs = orgs.slice(0, 3)
+      // Show default demo organization
+      const demoOrg = {
+        id: 'demo-org',
+        name: 'Empresa Demo',
+        createdAt: new Date().toISOString(),
+        _count: { users: 1 }
       }
-      setItems(validOrgs)
+      setItems([demoOrg])
     } catch (e) {
       console.error('Error loading organizations:', e)
-      message.error('No se pudieron cargar organizaciones')
+      // Always show demo org as fallback
+      setItems([{
+        id: 'demo-org',
+        name: 'Empresa Demo',
+        createdAt: new Date().toISOString(),
+        _count: { users: 1 }
+      }])
     } finally {
       setLoading(false)
     }
@@ -71,30 +69,33 @@ export default function SelectOrganization() {
     localStorage.setItem('organizationId', org.id)
     message.success(`Organización seleccionada: ${org.name}`)
     
-    // Check if user has token to decide where to redirect
-    const token = localStorage.getItem('token')
+    // Always redirect to login for demo
     setTimeout(() => {
-      if (token) {
-        window.location.href = '/dashboard'
-      } else {
-        window.location.href = '/login'
-      }
+      window.location.href = '/login'
     }, 1000)
   }
 
   const onCreate = async (values) => {
     setCreating(true)
     try {
-      const { data } = await api.post('/api/organizations', values)
-      localStorage.setItem('organizationId', data.id)
-      message.success('Organización creada y seleccionada')
-      await load()
-      // Redirect to login after creation for new users
-      setTimeout(() => {
-        window.location.href = '/login'
-      }, 1000)
+      const { name } = values || {}
+      if (!name || name.trim().length < 2) {
+        message.error('El nombre de la organización es obligatorio')
+        return
+      }
+      const { data } = await api.post('/organizations', { name })
+      if (data?.id) {
+        localStorage.setItem('organizationId', data.id)
+        message.success(`Organización creada: ${data.name}`)
+        setTimeout(() => {
+          window.location.href = '/register'
+        }, 800)
+      } else {
+        message.error('No se pudo crear la organización')
+      }
     } catch (e) {
-      message.error(e?.response?.data?.error || 'Error creando organización')
+      const errMsg = e?.response?.data?.error || 'Error creando organización'
+      message.error(errMsg)
     } finally {
       setCreating(false)
     }
