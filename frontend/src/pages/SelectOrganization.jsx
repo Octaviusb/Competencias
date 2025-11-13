@@ -39,24 +39,14 @@ export default function SelectOrganization() {
   const load = async () => {
     setLoading(true)
     try {
-      // Fetch single demo organization from backend
-      const { data } = await api.get('/public/demo-org')
+      // Hardcode single demo organization to avoid external DB dependency
       const demoOrg = {
-        id: data?.id,
-        name: data?.name || 'Empresa Demo',
-        createdAt: data?.createdAt || new Date().toISOString(),
-        _count: { users: 1 }
-      }
-      setItems([demoOrg])
-    } catch (e) {
-      console.error('Error loading organizations:', e)
-      // Always show demo org as fallback
-      setItems([{
         id: 'demo-org',
         name: 'Empresa Demo',
         createdAt: new Date().toISOString(),
         _count: { users: 1 }
-      }])
+      }
+      setItems([demoOrg])
     } finally {
       setLoading(false)
     }
@@ -79,24 +69,13 @@ export default function SelectOrganization() {
   const onCreate = async (values) => {
     setCreating(true)
     try {
-      const { name } = values || {}
-      if (!name || name.trim().length < 2) {
-        message.error('El nombre de la organización es obligatorio')
-        return
-      }
-      const { data } = await api.post('/organizations', { name })
-      if (data?.id) {
-        localStorage.setItem('organizationId', data.id)
-        message.success(`Organización creada: ${data.name}`)
-        setTimeout(() => {
-          window.location.href = '/register'
-        }, 800)
-      } else {
-        message.error('No se pudo crear la organización')
-      }
-    } catch (e) {
-      const errMsg = e?.response?.data?.error || 'Error creando organización'
-      message.error(errMsg)
+      const name = values?.name?.trim() || 'Empresa Demo'
+      // Hardcode: select demo organization without calling backend
+      localStorage.setItem('organizationId', 'demo-org')
+      message.success(`Organización preparada: ${name}`)
+      setTimeout(() => {
+        window.location.href = '/register'
+      }, 800)
     } finally {
       setCreating(false)
     }
