@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://competency-manager.fly.dev/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://competency-manager.fly.dev/api',
 })
 
 api.interceptors.request.use((config) => {

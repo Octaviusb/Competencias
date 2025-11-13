@@ -34,6 +34,25 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 const prisma = new PrismaClient();
 
+// CORS - must be BEFORE any middleware that may send a response (e.g., rate limiters)
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173,https://frontend-q51ad4kin-octaviusbs-projects.vercel.app')
+  .split(',')
+  .map(o => o.trim());
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Allow non-browser or same-origin requests
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','X-Organization-Id']
+};
+app.use(cors(corsOptions));
+// Explicitly respond to preflight
+app.options('*', cors(corsOptions));
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -55,15 +74,6 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/', limiter);
-
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://competencias-hk6sne7ts-octaviusbs-projects.vercel.app',
-    /\.vercel\.app$/
-  ],
-  credentials: true
-}));
 app.use(express.json({ limit: '1mb' }));
 app.use(validateRequest);
 app.use(sanitizeInput);
@@ -310,6 +320,7 @@ import trainingRouter from './routes/training.js';
 import searchRouter from './routes/search.js';
 import publicRouter from './routes/public.js';
 import psychometricRouter from './routes/psychometric.js';
+import bulkImportRouter from './routes/bulk-import.js';
 import { auditMiddleware } from './services/audit.js';
 // import cache from './services/cache.js'; // Optional - requires Redis
 
@@ -345,6 +356,7 @@ app.use('/api/recruitment', recruitmentRouter(prisma));
 app.use('/api/training', trainingRouter(prisma));
 app.use('/api/search', searchRouter(prisma));
 app.use('/api/psychometric', psychometricRouter(prisma));
+app.use('/api/bulk-import', bulkImportRouter(prisma));
 
 // 404
 app.use((req, res) => {

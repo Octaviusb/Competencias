@@ -6,10 +6,17 @@ const router = express.Router();
 export default function orgRouter(prisma) {
   const CreateSchema = z.object({ name: z.string().min(2) });
 
-  // Create organization (public for new organizations)
+  // Create organization (limited to prevent spam)
   router.post('/', async (req, res, next) => {
     try {
       const { name } = CreateSchema.parse(req.body);
+      
+      // Limit: max 5 organizations total to prevent spam
+      const orgCount = await prisma.organization.count();
+      if (orgCount >= 5) {
+        return res.status(429).json({ error: 'Límite de organizaciones alcanzado. Contacta al administrador.' });
+      }
+      
       const org = await prisma.organization.create({ data: { name } });
       // Seed default roles for this organization
       await prisma.role.createMany({ data: [

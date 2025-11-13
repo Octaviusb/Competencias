@@ -25,6 +25,7 @@ import Payroll from './pages/Payroll'
 import Recruitment from './pages/Recruitment'
 import Training from './pages/Training'
 import Psychometric from './pages/Psychometric'
+import BulkImport from './pages/BulkImport'
 
 export default function Router() {
   return (
@@ -249,6 +250,16 @@ export default function Router() {
           <RequireOrganization>
             <RequireAuth>
               <Psychometric />
+            </RequireAuth>
+          </RequireOrganization>
+        }
+      />
+      <Route
+        path="/bulk-import"
+        element={
+          <RequireOrganization>
+            <RequireAuth>
+              <BulkImport />
             </RequireAuth>
           </RequireOrganization>
         }

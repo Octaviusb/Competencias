@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "setup-prod": "node setup-production-demo.js",
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "deploy": "firebase deploy --only functions:api",
@@ -34,6 +35,7 @@
     "helmet": "^7.2.0",
     "ioredis": "^5.8.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.1",
     "pdfkit": "^0.14.0",

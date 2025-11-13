@@ -39,9 +39,22 @@ export default function SelectOrganization() {
   const load = async () => {
     setLoading(true)
     try {
-      // Use public organizations endpoint for selection
-      const response = await api.get('/public/organizations')
-      setItems(response.data)
+      // Use admin organizations endpoint
+      const response = await api.get('/admin/organizations')
+      const orgs = Array.isArray(response.data) ? response.data : []
+      
+      // Filter organizations that have users or are demo, or show first 3 if none match
+      let validOrgs = orgs.filter(org => 
+        org._count?.users > 0 || 
+        org.name?.toLowerCase().includes('demo') ||
+        org.name?.toLowerCase().includes('empresa')
+      )
+      
+      // If no valid orgs found, show first 3 to avoid empty list
+      if (validOrgs.length === 0) {
+        validOrgs = orgs.slice(0, 3)
+      }
+      setItems(validOrgs)
     } catch (e) {
       console.error('Error loading organizations:', e)
       message.error('No se pudieron cargar organizaciones')
@@ -72,7 +85,7 @@ export default function SelectOrganization() {
   const onCreate = async (values) => {
     setCreating(true)
     try {
-      const { data } = await api.post('/public/organizations', values)
+      const { data } = await api.post('/api/organizations', values)
       localStorage.setItem('organizationId', data.id)
       message.success('Organización creada y seleccionada')
       await load()

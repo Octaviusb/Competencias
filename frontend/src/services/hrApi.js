@@ -1,128 +1,73 @@
-const API_BASE = '/api';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'https://competency-manager.fly.dev';
 
 const getAuthHeaders = () => ({
   'Authorization': `Bearer ${localStorage.getItem('token')}`,
+  'X-Organization-Id': localStorage.getItem('organizationId'),
   'Content-Type': 'application/json'
+});
+
+export const hrApi = axios.create({
+  baseURL: `${API_BASE}/api`,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+hrApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  const orgId = localStorage.getItem('organizationId');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (orgId) config.headers['X-Organization-Id'] = orgId;
+  return config;
 });
 
 // Leave Requests API
 export const leaveRequestsApi = {
-  getAll: () => fetch(`${API_BASE}/leave-requests`, { headers: getAuthHeaders() }),
-  create: (data) => fetch(`${API_BASE}/leave-requests`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  updateStatus: (id, status, rejectionReason) => fetch(`${API_BASE}/leave-requests/${id}/status`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ status, rejectionReason })
-  }),
-  getBalances: (year) => fetch(`${API_BASE}/leave-requests/balances?year=${year}`, { headers: getAuthHeaders() }),
-  updateBalance: (employeeId, data) => fetch(`${API_BASE}/leave-requests/balances/${employeeId}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  })
+  getAll: () => hrApi.get('/leave-requests'),
+  create: (data) => hrApi.post('/leave-requests', data),
+  updateStatus: (id, status, rejectionReason) => hrApi.patch(`/leave-requests/${id}/status`, { status, rejectionReason }),
+  getBalances: (year) => hrApi.get(`/leave-requests/balances?year=${year}`),
+  updateBalance: (employeeId, data) => hrApi.put(`/leave-requests/balances/${employeeId}`, data)
 };
 
 // Attendance API
 export const attendanceApi = {
-  getRecords: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/attendance?${query}`, { headers: getAuthHeaders() });
-  },
-  clock: (employeeId, type) => fetch(`${API_BASE}/attendance/clock`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ employeeId, type })
-  }),
-  createRecord: (data) => fetch(`${API_BASE}/attendance`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  getSummary: (employeeId, month, year) => 
-    fetch(`${API_BASE}/attendance/summary?employeeId=${employeeId}&month=${month}&year=${year}`, { headers: getAuthHeaders() })
+  getRecords: (params = {}) => hrApi.get('/attendance', { params }),
+  clock: (employeeId, type) => hrApi.post('/attendance/clock', { employeeId, type }),
+  createRecord: (data) => hrApi.post('/attendance', data),
+  getSummary: (employeeId, month, year) => hrApi.get(`/attendance/summary?employeeId=${employeeId}&month=${month}&year=${year}`)
 };
 
 // Payroll API
 export const payrollApi = {
-  getPeriods: () => fetch(`${API_BASE}/payroll/periods`, { headers: getAuthHeaders() }),
-  createPeriod: (data) => fetch(`${API_BASE}/payroll/periods`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  getPayslips: (periodId) => fetch(`${API_BASE}/payroll/periods/${periodId}/payslips`, { headers: getAuthHeaders() }),
-  generatePayslips: (periodId) => fetch(`${API_BASE}/payroll/periods/${periodId}/generate`, {
-    method: 'POST',
-    headers: getAuthHeaders()
-  }),
-  getEmployeePayslips: (employeeId) => fetch(`${API_BASE}/payroll/employee/${employeeId}`, { headers: getAuthHeaders() })
+  getPeriods: () => hrApi.get('/payroll/periods'),
+  createPeriod: (data) => hrApi.post('/payroll/periods', data),
+  getPayslips: (periodId) => hrApi.get(`/payroll/periods/${periodId}/payslips`),
+  generatePayslips: (periodId) => hrApi.post(`/payroll/periods/${periodId}/generate`),
+  getEmployeePayslips: (employeeId) => hrApi.get(`/payroll/employee/${employeeId}`)
 };
 
 // Recruitment API
 export const recruitmentApi = {
-  getJobs: () => fetch(`${API_BASE}/recruitment/jobs`, { headers: getAuthHeaders() }),
-  createJob: (data) => fetch(`${API_BASE}/recruitment/jobs`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  updateJob: (id, data) => fetch(`${API_BASE}/recruitment/jobs/${id}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  getCandidates: () => fetch(`${API_BASE}/recruitment/candidates`, { headers: getAuthHeaders() }),
-  createCandidate: (data) => fetch(`${API_BASE}/recruitment/candidates`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  getApplications: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/recruitment/applications?${query}`, { headers: getAuthHeaders() });
-  },
-  createApplication: (data) => fetch(`${API_BASE}/recruitment/applications`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  updateApplicationStatus: (id, status, notes) => fetch(`${API_BASE}/recruitment/applications/${id}/status`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ status, notes })
-  })
+  getJobs: () => hrApi.get('/recruitment/jobs'),
+  createJob: (data) => hrApi.post('/recruitment/jobs', data),
+  updateJob: (id, data) => hrApi.put(`/recruitment/jobs/${id}`, data),
+  getCandidates: () => hrApi.get('/recruitment/candidates'),
+  createCandidate: (data) => hrApi.post('/recruitment/candidates', data),
+  getApplications: (params = {}) => hrApi.get('/recruitment/applications', { params }),
+  createApplication: (data) => hrApi.post('/recruitment/applications', data),
+  updateApplicationStatus: (id, status, notes) => hrApi.patch(`/recruitment/applications/${id}/status`, { status, notes })
 };
 
 // Training API
 export const trainingApi = {
-  getCourses: () => fetch(`${API_BASE}/training/courses`, { headers: getAuthHeaders() }),
-  createCourse: (data) => fetch(`${API_BASE}/training/courses`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  updateCourse: (id, data) => fetch(`${API_BASE}/training/courses/${id}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  getEnrollments: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return fetch(`${API_BASE}/training/enrollments?${query}`, { headers: getAuthHeaders() });
-  },
-  createEnrollment: (data) => fetch(`${API_BASE}/training/enrollments`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  updateEnrollment: (id, data) => fetch(`${API_BASE}/training/enrollments/${id}`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data)
-  }),
-  getStats: () => fetch(`${API_BASE}/training/stats`, { headers: getAuthHeaders() })
+  getCourses: () => hrApi.get('/training/courses'),
+  createCourse: (data) => hrApi.post('/training/courses', data),
+  updateCourse: (id, data) => hrApi.put(`/training/courses/${id}`, data),
+  getEnrollments: (params = {}) => hrApi.get('/training/enrollments', { params }),
+  createEnrollment: (data) => hrApi.post('/training/enrollments', data),
+  updateEnrollment: (id, data) => hrApi.patch(`/training/enrollments/${id}`, data),
+  getStats: () => hrApi.get('/training/stats')
 };

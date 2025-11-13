@@ -6,6 +6,8 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://competency-manager.fly.dev/api"
-  }
+    "VITE_API_URL": "https://competency-manager.fly.dev"
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }

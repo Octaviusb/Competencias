@@ -35,6 +35,11 @@ const Dashboard = () => {
           <p>Big Five</p>
           <button onClick={() => window.location.href = '/psychometric'}>Ver pruebas</button>
         </div>
+        <div className="card purple">
+          <h3>Carga Masiva</h3>
+          <p>Importar datos</p>
+          <button onClick={() => window.location.href = '/bulk-import'}>Cargar datos</button>
+        </div>
       </section>
     </div>
   );
