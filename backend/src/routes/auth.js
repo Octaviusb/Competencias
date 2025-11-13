@@ -76,7 +76,24 @@ export default function authRouter(prisma) {
   router.post('/login', loginLimiter, async (req, res, next) => {
     try {
       const { email, password } = req.body;
-      const organizationId = req.tenantId || req.body.organizationId;
+      let organizationId = req.tenantId || req.body.organizationId;
+
+      // Map demo slug or non-UUID to real organization id for demo flows
+      try {
+        const looksLikeUuid = typeof organizationId === 'string' && /[a-f0-9-]{16,}/i.test(organizationId);
+        if (organizationId === 'demo-org' || !looksLikeUuid) {
+          let org = await prisma.organization.findFirst({ where: { name: 'demo-org' } });
+          if (!org) {
+            org = await prisma.organization.findFirst({ where: { name: 'Empresa Demo' } });
+          }
+          if (org) {
+            organizationId = org.id;
+          }
+        }
+      } catch (e) {
+        // ignore resolution errors, validation below will handle missing org
+      }
+
       if (!email || !password || !organizationId) return res.status(400).json({ error: 'email, password, organizationId required' });
 
       const user = await prisma.user.findFirst({ where: { email, organizationId }, include: { roles: { include: { role: true } }, employee: true } });
