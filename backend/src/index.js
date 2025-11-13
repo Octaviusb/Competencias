@@ -43,6 +43,12 @@ const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // Allow non-browser or same-origin requests
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      const url = new URL(origin);
+      if (url.hostname.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+    } catch (e) {}
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

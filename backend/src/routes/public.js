@@ -45,5 +45,38 @@ export default function publicRouter(prisma) {
     }
   });
 
+  // Ensure and return a single demo organization
+  router.get('/demo-org', async (req, res, next) => {
+    try {
+      // Try to find an existing demo organization by common demo names
+      let org = await prisma.organization.findFirst({
+        where: { name: { in: ['demo-org', 'Empresa Demo'] } },
+        orderBy: { createdAt: 'asc' }
+      });
+
+      if (!org) {
+        // Create a single demo organization
+        org = await prisma.organization.create({ data: { name: 'Empresa Demo' } });
+      }
+
+      // Ensure default roles exist for this organization
+      const existingRoles = await prisma.role.findMany({ where: { organizationId: org.id } });
+      if (existingRoles.length === 0) {
+        await prisma.role.createMany({
+          data: [
+            { name: 'admin', organizationId: org.id },
+            { name: 'director', organizationId: org.id },
+            { name: 'auditor', organizationId: org.id },
+            { name: 'usuario', organizationId: org.id },
+          ]
+        });
+      }
+
+      return res.json({ id: org.id, name: org.name, createdAt: org.createdAt });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   return router;
 }

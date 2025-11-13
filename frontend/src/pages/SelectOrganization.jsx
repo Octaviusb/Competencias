@@ -39,11 +39,12 @@ export default function SelectOrganization() {
   const load = async () => {
     setLoading(true)
     try {
-      // Show default demo organization
+      // Fetch single demo organization from backend
+      const { data } = await api.get('/public/demo-org')
       const demoOrg = {
-        id: 'demo-org',
-        name: 'Empresa Demo',
-        createdAt: new Date().toISOString(),
+        id: data?.id,
+        name: data?.name || 'Empresa Demo',
+        createdAt: data?.createdAt || new Date().toISOString(),
         _count: { users: 1 }
       }
       setItems([demoOrg])
