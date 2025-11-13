@@ -12,6 +12,8 @@ const auditLogger = winston.createLogger({
   ]
 });
 
+export { auditLogger };
+
 export const auditLog = (action, userId, organizationId, details = {}) => {
   auditLogger.info({
     action,
